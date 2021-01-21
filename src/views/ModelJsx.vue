@@ -1,5 +1,5 @@
 <script lang="tsx">
-import { defineComponent, reactive, ref, withModifiers } from "vue";
+import { defineComponent, reactive, ref, Ref, withModifiers } from "vue";
 import { UserOutlined } from "@ant-design/icons-vue";
 
 export default defineComponent({
@@ -32,8 +32,28 @@ export default defineComponent({
       name: "",
       age: 0,
     });
+    const rules = reactive({
+      name: [
+        {
+          required: true,
+          message: "Please input Activity name",
+          trigger: "blur",
+        },
+        { min: 3, max: 5, message: "Length should be 3 to 5", trigger: "blur" },
+      ],
+    });
+    const ruleForm: Ref = ref(null);
     const handleAdd = () => {
-      list.value.push({ name: formInline.name, age: formInline.age });
+      ruleForm.value
+        .validate()
+        .then(() => {
+          list.value.push({ name: formInline.name, age: formInline.age });
+        })
+        .catch((error: any) => {
+          if(error.errorFields.length === 0){
+            list.value.push({ name: formInline.name, age: formInline.age });
+          }
+        });
     };
     const formSlots = {
       footer: () => (
@@ -57,13 +77,13 @@ export default defineComponent({
       return (
         <div>
           <a-button type="primary" onClick={withModifiers(showModal,['self'])}>
-            Open Modal with customized footer
+            Open Modal
           </a-button>
           <a-modal vModel={[visible.value, 'visible']} title="Title" onOk={handleOk} vSlots={formSlots}>
             {/*注释 */}
-            <a-form layout="inline" model={formInline} onSubmit={handleAdd}>
-              <a-form-item>
-                <a-input vModel={[formInline.name, 'value', ['trim']]} placeholder="Name" vSlots={inputSlots}>
+            <a-form ref={ruleForm} rules={rules} layout="inline" model={formInline} onSubmit={handleAdd}>
+              <a-form-item name="name">
+                <a-input vModel={[formInline.name, 'value']} placeholder="Name" vSlots={inputSlots}>
                 </a-input>
               </a-form-item>
               <a-form-item>

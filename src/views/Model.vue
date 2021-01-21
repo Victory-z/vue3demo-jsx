@@ -1,7 +1,7 @@
 <template>
   <div>
     <a-button type="primary" @click.self="showModal">
-      Open Modal with customized footer
+      Open Modal
     </a-button>
     <a-modal v-model:visible="visible" title="Title" @ok="handleOk">
       <template #footer>
@@ -15,16 +15,22 @@
           Submit
         </a-button>
       </template>
-      <a-form layout="inline" :model="formInline" @submit="handleAdd">
-        <a-form-item>
-          <a-input v-model:value.trim="formInline.name" placeholder="Name">
+      <a-form
+        ref="ruleForm"
+        layout="inline"
+        :model="formInline"
+        :rules="rules"
+        @submit="handleAdd"
+      >
+        <a-form-item name="name">
+          <a-input v-model:value="formInline.name" placeholder="Name">
             <template #prefix
               ><UserOutlined style="color: rgba(0, 0, 0, 0.25)"
             /></template>
           </a-input>
         </a-form-item>
         <a-form-item>
-          <a-input v-model:value.number="formInline.age" placeholder="Age"/>
+          <a-input v-model:value.number="formInline.age" placeholder="Age" />
         </a-form-item>
         <a-form-item>
           <a-button
@@ -43,7 +49,7 @@
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, reactive, ref } from "vue";
+import { defineComponent, reactive, Ref, ref } from "vue";
 import { UserOutlined } from "@ant-design/icons-vue";
 export default defineComponent({
   components: {
@@ -73,10 +79,30 @@ export default defineComponent({
     };
     const formInline = reactive({
       name: "",
-      age: 0
+      age: 0,
     });
+    const rules = reactive({
+      name: [
+        {
+          required: true,
+          message: "Please input Activity name",
+          trigger: "blur",
+        },
+        { min: 3, max: 5, message: "Length should be 3 to 5", trigger: "blur" },
+      ],
+    });
+    const ruleForm: Ref = ref(null);
     const handleAdd = () => {
-      list.value.push({ name: formInline.name, age: formInline.age });
+      ruleForm.value
+        .validate()
+        .then(() => {
+          list.value.push({ name: formInline.name, age: formInline.age });
+        })
+        .catch((error: any) => {
+          if(error.errorFields.length === 0){
+            list.value.push({ name: formInline.name, age: formInline.age });
+          }
+        });
     };
     return {
       list,
@@ -87,6 +113,8 @@ export default defineComponent({
       handleOk,
       handleCancel,
       handleAdd,
+      rules,
+      ruleForm,
     };
   },
 });
