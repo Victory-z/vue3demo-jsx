@@ -32,8 +32,113 @@ new Vue({
   }
 })
 ```
-看个复杂的例子，
-模板复杂的话，这个渲染函数书写是非常痛苦的，并且没法直观看出结构，容易成为“祖传代码”，既然渲染函数这么吃力不讨好的话，就派上 JSX 上场了,它可以让我们回到更接近于模板的语法上。
+看个复杂的例子，比较直观
+
+一个表单，模板是这样
+```html
+<el-form :inline="true" :model="formInline" class="demo-form-inline">
+  <el-form-item label="审批人">
+    <el-input v-model="formInline.user" placeholder="审批人"></el-input>
+  </el-form-item>
+  <el-form-item label="活动区域">
+    <el-select v-model="formInline.region" placeholder="活动区域">
+      <el-option label="区域一" value="shanghai"></el-option>
+      <el-option label="区域二" value="beijing"></el-option>
+    </el-select>
+  </el-form-item>
+  <el-form-item>
+    <el-button type="primary" @click="onSubmit">查询</el-button>
+  </el-form-item>
+</el-form>
+```
+对应的渲染函数
+```javascript
+export default {
+  render(createElement) {
+    return createElement(
+      'ElForm',
+      {
+        props: {
+          inline: true,
+          model: this.formInline
+        },
+        staticClass: 'demo-form-inline'
+      },
+      [
+        createElement(
+          'ElFormItem',
+          {
+            props: {
+              label: '审批人'
+            }
+          },
+          [
+            createElement('ElInput', {
+              props: {
+                value: this.formInline.user
+              },
+              attrs: {
+                placeholder: '审批人'
+              },
+              on: {
+                input: this.$_handleChangeUser
+              }
+            })
+          ]
+        ),
+        createElement(
+          'ElFormItem',
+          {
+            props: {
+              label: '活动区域'
+            }
+          },
+          [
+            createElement(
+              'ElSelect',
+              {
+                props: {
+                  value: this.formInline.region,
+                  placeholder: '活动区域'
+                }
+              },
+              [
+                createElement('ElOption', {
+                  props: {
+                    label: '区域一',
+                    value: 'shanghai'
+                  }
+                }),
+                createElement('ElOption', {
+                  props: {
+                    label: '区域二',
+                    value: 'beijing'
+                  }
+                })
+              ]
+            )
+          ]
+        ),
+        createElement('ElFormItem', null, [
+          createElement(
+            'ElButton',
+            {
+              props: {
+                type: 'primary'
+              },
+              on: {
+                click: this.$_handleSubmit
+              }
+            },
+            '查询'
+          )
+        ])
+      ]
+    )
+  }
+}
+```
+模板复杂的话，这个渲染函数书写是非常痛苦的，并且没法直观看出结构，既然渲染函数这么吃力不讨好的话，就派上 JSX 上场了,它可以让我们回到更接近于模板的语法上。
 ## vue3中使用jsx
 实际上 vue-cli 建立的 vue3 项目中已经内置了 jsx 的这个编译插件，如果你不需要自定义配置，是不需要安装就可以即开即用 jsx 的，vue官网的例子可以说非常简陋了，但是但是他给我们指引了 vue3 中 jsx 的 babel 转换插件 [jsx-next](https://github.com/vuejs/jsx-next/tree/dev/packages/babel-plugin-jsx "jsx-next")。
 下面通过一个小demo看下比较常用的一些语法：
